@@ -1,4 +1,4 @@
-rootProject.name = 'api-workshop-105'
+rootProject.name = 'openshift-workshop'
 include 'user-service'
 include 'logistics-service'
 include 'product-service'
