@@ -121,17 +121,16 @@ objects:
           deploymentconfig: ${APP_NAME}
       spec:
         containers:
-        - image: ${PROJECT_NAME}/${APP_NAME}:latest
+        - image: ${PROJECT_NAME}/${APP_NAME}
           imagePullPolicy: Always
           name: ${APP_NAME}
           ports:
           - containerPort: 8080
             protocol: TCP
           resources: {}
-          terminationMessagePath: /dev/termination-log
           livenessProbe:
             httpGet:
-              path: /
+              path: /${APP_NAME}/health
               port: 8080
               scheme: HTTP
             initialDelaySeconds: 10
@@ -141,7 +140,7 @@ objects:
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /
+              path: /${APP_NAME}/health
               port: 8080
               scheme: HTTP
             initialDelaySeconds: 30
@@ -152,7 +151,15 @@ objects:
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         securityContext: {}
-    triggers: []
+    triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: false
+        from:
+          kind: ImageStreamTag
+          name: ${APP_NAME}:latest
+        containerNames:
+        - ${APP_NAME}
 
 - apiVersion: v1
   kind: Service
