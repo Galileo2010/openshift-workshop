@@ -30,7 +30,7 @@ node("gradle") {
     }
 
     stage("Build Image") {
-        sh "mkdir -p "binaries"
+        sh "mkdir -p binaries"
         sh "cp ${appJarFile} binaries/"
         sh "cp openshift/Dockerfile binaries/"
 
