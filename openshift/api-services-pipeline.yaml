@@ -145,8 +145,7 @@ objects:
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         securityContext: {}
-    triggers:
-    - type: ConfigChange
+    triggers: []
 
 - apiVersion: v1
   kind: Service

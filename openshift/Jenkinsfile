@@ -1,10 +1,10 @@
-def project="workshop"
-def appName="${env.APP_NAME}"
-def appPort="${env.APP_PORT}"
-def gitSourceUrl="${env.GIT_SOURCE_URL}"
-def gitSourceRef="${env.GIT_SOURCE_REF}"
-def buildNumber="${env.BUILD_NUMBER}"
-def appJarFile=""
+def project = "workshop"
+def appName = "${env.APP_NAME}"
+def appPort = "${env.APP_PORT}"
+def gitSourceUrl = "${env.GIT_SOURCE_URL}"
+def gitSourceRef = "${env.GIT_SOURCE_REF}"
+def buildNumber = "${env.BUILD_NUMBER}"
+def appJarFile = ""
 
 node("gradle") {
 
@@ -17,7 +17,7 @@ node("gradle") {
     }
 
     stage("Build App") {
-        sh "gradle ${appName}:build -s"
+        sh "gradle ${appName}:build -x :${appName}:test -s"
         appJarFile = sh (
             script: "ls ${appName}/build/libs/*.jar",
             returnStdout: true
@@ -30,22 +30,37 @@ node("gradle") {
     }
 
     stage("Build Image") {
-        sh "oc start-build ${appName}-docker --from-file=${appJarFile} -n ${project}"
         openshift.withCluster() {
-            openshift.withProject(${project}) {
-                def bc = openshift.selector('bc', "${appName}-docker")
-                def blds = bc.related('builds')
-                blds.untilEach {
-                    return it.object().status.phase == "Complete"
+            openshift.withProject("${project}") {
+
+                def build = openshift.startBuild("${appName}-docker", "--from-file=${appJarFile}")
+                build.untilEach {
+                    return it.object().status.phase == "Running"
                 }
+
+                build.logs("-f")
             }
         }
     }
 
     stage("Tag Image") {
         openshift.withCluster() {
-            openshift.withProject(${project}) {
+            openshift.withProject("${project}") {
                 openshift.tag("${appName}:latest", "${appName}:${buildNumber}")
+            }
+        }
+    }
+
+    stage("Deploy") {
+        openshift.withCluster() {
+            openshift.withProject("${project}") {
+                def dc = openshift.selector("dc", "${appName}")
+                def cfg = dc.object()
+                cfg.spec.template.spec.containers[0].image = "${appName}:${buildNumber}"
+
+                openshift.apploy(cfg)
+
+                dc.rollout().status()
             }
         }
     }
