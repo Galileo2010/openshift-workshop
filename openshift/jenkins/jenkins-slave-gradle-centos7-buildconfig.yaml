@@ -1,0 +1,18 @@
+kind: "BuildConfig"
+apiVersion: "v1"
+metadata:
+  name: "jenkins-slave-gradle-centos7"
+  namespace: "ci"
+spec:
+  source:
+    type: "Git"
+    git:
+      uri: "https://github.com/platform-guild/openshift-workshop.git"
+  strategy:
+    type: "Docker"
+    dockerStrategy:
+      dockerfilePath: "openshift/jenkins/Dockerfile.gradle-slave"
+  output:
+    to:
+      kind: "DockerImage"
+      name: "docker-registry.default.svc:5000/ci/jenkins-slave-gradle-centos7:latest"
