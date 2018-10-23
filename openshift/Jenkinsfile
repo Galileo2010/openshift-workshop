@@ -1,12 +1,15 @@
 def project="workshop"
-def appName="${APP_NAME}"
-def appPort=${APP_PORT}
+def appName="${env.APP_NAME}"
+def appPort="${env.APP_PORT}"
+def gitSourceUrl="${env.GIT_SOURCE_URL}"
+def gitSourceRef="${env.GIT_SOURCE_REF}"
+def buildNumber="${env.BUILD_NUMBER}"
 def appJarFile=""
 
 node("gradle") {
 
     stage("Checkout") {
-        git url: "${GIT_SOURCE_URL}", branch: "${GIT_SOURCE_REF}"
+        git url: "${gitSourceUrl}", branch: "${gitSourceRef}"
     }
 
     stage("Test") {
@@ -42,7 +45,7 @@ node("gradle") {
     stage("Tag Image") {
         openshift.withCluster() {
             openshift.withProject(${project}) {
-                openshift.tag("${appName}:latest", "${appName}:${env.BUILD_NUMBER}")
+                openshift.tag("${appName}:latest", "${appName}:${buildNumber}")
             }
         }
     }

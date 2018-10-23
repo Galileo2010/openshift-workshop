@@ -44,6 +44,8 @@ objects:
       name: ${APP_NAME}
     name: ${APP_NAME}
   spec:
+    triggers:
+    - type: "ConfigChange"
     source:
       type: "Git"
       git:
@@ -53,6 +55,15 @@ objects:
       type: JenkinsPipeline
       jenkinsPipelineStrategy:
         jenkinsfilePath: openshift/Jenkinsfile
+        env:
+        - name: APP_NAME
+          value: ${APP_NAME}
+        - name: APP_PORT
+          value: ${APP_PORT}
+        - name: GIT_SOURCE_URL
+          value: ${GIT_SOURCE_URL}
+        - name: GIT_SOURCE_REF
+          value: ${GIT_SOURCE_REF}
 
 - apiVersion: v1
   kind: BuildConfig
