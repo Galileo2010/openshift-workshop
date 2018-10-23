@@ -1,0 +1,49 @@
+def project="workshop"
+def appName="${APP_NAME}"
+def appPort=${APP_PORT}
+def appJarFile=""
+
+node("gradle") {
+
+    stage("Checkout") {
+        git url: "${GIT_SOURCE_URL}", branch: "${GIT_SOURCE_REF}"
+    }
+
+    stage("Test") {
+        sh "gradle :${appName}:test -s"
+    }
+
+    stage("Build App") {
+        sh "gradle ${appName}:build -s"
+        appJarFile = sh (
+            script: "ls ${appName}/build/libs/*.jar",
+            returnStdout: true
+        ).trim()
+
+        def exists = fileExists "${appJarFile}"
+        if (!exists) {
+            error "Jar file not found"
+        }
+    }
+
+    stage("Build Image") {
+        sh "oc start-build ${appName}-docker --from-file=${appJarFile} -n ${project}"
+        openshift.withCluster() {
+            openshift.withProject(${project}) {
+                def bc = openshift.selector('bc', "${appName}-docker")
+                def blds = bc.related('builds')
+                blds.untilEach {
+                    return it.object().status.phase == "Complete"
+                }
+            }
+        }
+    }
+
+    stage("Tag Image") {
+        openshift.withCluster() {
+            openshift.withProject(${project}) {
+                openshift.tag("${appName}:latest", "${appName}:${env.BUILD_NUMBER}")
+            }
+        }
+    }
+}
