@@ -31,8 +31,8 @@ node("gradle") {
 
     stage("Build Image") {
         sh "mkdir -p binaries"
-        sh "cp ${appJarFile} binaries/"
-        sh "cp openshift/Dockerfile binaries/"
+        sh "cp ${appJarFile} binaries/app.jar"
+        sh "cp openshift/Dockerfile binaries/Dockerfile"
 
         openshift.withCluster() {
             openshift.withProject("${project}") {
