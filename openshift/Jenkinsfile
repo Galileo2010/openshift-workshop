@@ -66,8 +66,8 @@ node("gradle") {
     stage("Deploy") {
         openshift.withCluster() {
             openshift.withProject("${project}") {
-                openshift.run("${appName}", "--image=${appName}:${buildNumber}")
                 def dc = openshift.selector("dc", "${appName}")
+                dc.rollout().latest()
                 dc.rollout().status()
             }
         }
