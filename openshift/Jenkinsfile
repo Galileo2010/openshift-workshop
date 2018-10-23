@@ -42,6 +42,15 @@ node("gradle") {
                 }
 
                 build.logs("-f")
+
+                def noError = true
+                build.withEach {
+                    if (it.object().status.phase == "Failed") {
+                        noError = false
+                    }
+                }
+
+                return noError
             }
         }
     }
@@ -61,7 +70,7 @@ node("gradle") {
                 def cfg = dc.object()
                 cfg.spec.template.spec.containers[0].image = "${appName}:${buildNumber}"
 
-                openshift.apploy(cfg)
+                openshift.apply(cfg)
 
                 dc.rollout().status()
             }
