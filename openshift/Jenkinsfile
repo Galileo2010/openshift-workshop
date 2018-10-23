@@ -30,10 +30,13 @@ node("gradle") {
     }
 
     stage("Build Image") {
+        sh "mkdir -p "binaries"
+        sh "cp ${appJarFile} binaries/"
+        sh "cp openshift/Dockerfile binaries/"
+
         openshift.withCluster() {
             openshift.withProject("${project}") {
-
-                def build = openshift.startBuild("${appName}-docker", "--from-file=${appJarFile}")
+                def build = openshift.startBuild("${appName}-docker", "--from-dir=binaries")
                 build.untilEach {
                     return it.object().status.phase == "Running"
                 }

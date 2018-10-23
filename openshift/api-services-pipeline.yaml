@@ -81,11 +81,11 @@ objects:
     runPolicy: Serial
     source:
       binary:
-        asFile: app.jar
+        asDir: .
       type: Docker
     strategy:
       dockerStrategy:
-        dockerfilePath: openshift/Dockerfile
+        dockerfilePath: Dockerfile
     triggers: []
 
 - apiVersion: v1
