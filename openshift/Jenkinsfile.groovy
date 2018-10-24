@@ -37,23 +37,25 @@ pipeline {
                 sh "cp ${APP_JAR_FILE} binaries/app.jar"
                 sh "cp openshift/Dockerfile binaries/Dockerfile"
 
-                openshift.withCluster() {
-                    openshift.withProject("${PROJECT_NAME}") {
-                        def build = openshift.startBuild("${APP_NAME}-docker", "--from-dir=binaries")
-                        build.untilEach {
-                            return it.object().status.phase == "Running"
-                        }
-
-                        build.logs("-f")
-
-                        def noError = true
-                        build.withEach {
-                            if (it.object().status.phase == "Failed") {
-                                noError = false
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject("${PROJECT_NAME}") {
+                            def build = openshift.startBuild("${APP_NAME}-docker", "--from-dir=binaries")
+                            build.untilEach {
+                                return it.object().status.phase == "Running"
                             }
-                        }
 
-                        return noError
+                            build.logs("-f")
+
+                            def noError = true
+                            build.withEach {
+                                if (it.object().status.phase == "Failed") {
+                                    noError = false
+                                }
+                            }
+
+                            return noError
+                        }
                     }
                 }
             }
@@ -61,11 +63,13 @@ pipeline {
 
         stage("Deploy") {
             steps {
-                openshift.withCluster() {
-                    openshift.withProject("${PROJECT_NAME}") {
-                        def dc = openshift.selector("dc", "${APP_NAME}")
-                        dc.rollout().latest()
-                        dc.rollout().status()
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject("${PROJECT_NAME}") {
+                            def dc = openshift.selector("dc", "${APP_NAME}")
+                            dc.rollout().latest()
+                            dc.rollout().status()
+                        }
                     }
                 }
             }

@@ -59,7 +59,7 @@ objects:
     strategy:
       type: JenkinsPipeline
       jenkinsPipelineStrategy:
-        jenkinsfilePath: openshift/Jenkinsfile
+        jenkinsfilePath: openshift/Jenkinsfile.groovy
         env:
         - name: APP_NAME
           value: ${APP_NAME}
