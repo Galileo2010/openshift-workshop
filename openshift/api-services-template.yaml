@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: api-services-pipeline
+  name: api-services-template
 
 parameters:
 - name: PROJECT_NAME
