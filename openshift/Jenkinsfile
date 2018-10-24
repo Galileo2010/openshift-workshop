@@ -1,66 +1,75 @@
-def project = "${PROJECT_NAME}"
-def appName = "${env.APP_NAME}"
-def appPort = "${env.APP_PORT}"
-def gitSourceUrl = "${env.GIT_SOURCE_URL}"
-def gitSourceRef = "${env.GIT_SOURCE_REF}"
-def buildNumber = "${env.BUILD_NUMBER}"
-def appJarFile = ""
-
-node("gradle") {
-
-    stage("Checkout") {
-        git url: "${gitSourceUrl}", branch: "${gitSourceRef}"
+pipeline {
+    agent {
+        lable 'gradle'
     }
 
-    stage("Test") {
-        sh "gradle :${appName}:test -s"
+    environment {
+        APP_NAME = "${env.APP_NAME}"
+        APP_PORT = "${env.APP_PORT}"
+        GIT_SOURCE_URL = "${env.GIT_SOURCE_URL}"
+        GIT_SOURCE_REF = "${env.GIT_SOURCE_REF}"
+        BUILD_NUMBER = "${env.BUILD_NUMBER}"
+        APP_JAR_FILE = ""
     }
 
-    stage("Build App") {
-        sh "gradle ${appName}:build -x :${appName}:test -s"
-        appJarFile = sh (
-            script: "ls ${appName}/build/libs/*.jar",
-            returnStdout: true
-        ).trim()
-
-        def exists = fileExists "${appJarFile}"
-        if (!exists) {
-            error "Jar file not found"
-        }
-    }
-
-    stage("Build Image") {
-        sh "mkdir -p binaries"
-        sh "cp ${appJarFile} binaries/app.jar"
-        sh "cp openshift/Dockerfile binaries/Dockerfile"
-
-        openshift.withCluster() {
-            openshift.withProject("${project}") {
-                def build = openshift.startBuild("${appName}-docker", "--from-dir=binaries")
-                build.untilEach {
-                    return it.object().status.phase == "Running"
-                }
-
-                build.logs("-f")
-
-                def noError = true
-                build.withEach {
-                    if (it.object().status.phase == "Failed") {
-                        noError = false
-                    }
-                }
-
-                return noError
+    stages {
+        stage("Checkout") {
+            steps {
+                git url: "${GIT_SOURCE_URL}", branch: "${GIT_SOURCE_REF}"
             }
         }
-    }
 
-    stage("Deploy") {
-        openshift.withCluster() {
-            openshift.withProject("${project}") {
-                def dc = openshift.selector("dc", "${appName}")
-                dc.rollout().latest()
-                dc.rollout().status()
+        stage("Test & Build App") {
+            steps {
+                sh "gradle :${APP_NAME}:clean :${APP_NAME}:build -s"
+
+            }
+        }
+
+        stage("Build Image with App") {
+            steps {
+                APP_JAR_FILE = sh(
+                        script: "ls ${APP_NAME}/build/libs/*.jar",
+                        returnStdout: true
+                ).trim()
+                if (!fileExists("${APP_JAR_FILE}")) {
+                    error "Jar file not found"
+                }
+                sh "mkdir -p binaries"
+                sh "cp ${APP_JAR_FILE} binaries/app.jar"
+                sh "cp openshift/Dockerfile binaries/Dockerfile"
+
+                openshift.withCluster() {
+                    openshift.withProject("${PROJECT_NAME}") {
+                        def build = openshift.startBuild("${APP_NAME}-docker", "--from-dir=binaries")
+                        build.untilEach {
+                            return it.object().status.phase == "Running"
+                        }
+
+                        build.logs("-f")
+
+                        def noError = true
+                        build.withEach {
+                            if (it.object().status.phase == "Failed") {
+                                noError = false
+                            }
+                        }
+
+                        return noError
+                    }
+                }
+            }
+        }
+
+        stage("Deploy") {
+            steps {
+                openshift.withCluster() {
+                    openshift.withProject("${PROJECT_NAME}") {
+                        def dc = openshift.selector("dc", "${APP_NAME}")
+                        dc.rollout().latest()
+                        dc.rollout().status()
+                    }
+                }
             }
         }
     }
