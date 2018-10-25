@@ -13,7 +13,7 @@ parameters:
   description: The name assigned to all of the application objects defined in this template.
   displayName: Application Name
   required: true
-  value: user-service
+  value: zipkin-server
 - name: GIT_SOURCE_URL
   description: The source URL for the application
   displayName: Source URL
@@ -28,7 +28,7 @@ parameters:
   description: Application server port
   displayName: Server Port
   required: true
-  value: "8080"
+  value: "9000"
 - name: APP_ENV
   description: Application running environment
   displayName: App Environment
@@ -72,7 +72,6 @@ objects:
       git:
         uri: ${GIT_SOURCE_URL}
         ref: ${GIT_SOURCE_REF}
-      contextDir: openshift
     triggers:
     - type: ImageChange
 
@@ -118,8 +117,8 @@ objects:
           resources: {}
           livenessProbe:
             httpGet:
-              path: /${APP_NAME}/health
-              port: 8080
+              path: /health
+              port: ${{APP_PORT}}
               scheme: HTTP
             initialDelaySeconds: 10
             timeoutSeconds: 2
@@ -128,8 +127,8 @@ objects:
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /${APP_NAME}/health
-              port: 8080
+              path: /health
+              port: ${{APP_PORT}}
               scheme: HTTP
             initialDelaySeconds: 30
             timeoutSeconds: 2
