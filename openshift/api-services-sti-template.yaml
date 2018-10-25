@@ -72,6 +72,7 @@ objects:
       git:
         uri: ${GIT_SOURCE_URL}
         ref: ${GIT_SOURCE_REF}
+      contextDir: openshift
     triggers:
     - type: ImageChange
 
@@ -112,7 +113,7 @@ objects:
           - name: APP_PORT
             value: ${APP_PORT}
           ports:
-          - containerPort: ${APP_PORT}
+          - containerPort: ${{APP_PORT}}
             protocol: TCP
           resources: {}
           livenessProbe:
@@ -157,9 +158,9 @@ objects:
   spec:
     ports:
     - name: ${APP_PORT}-tcp
-      port: ${APP_PORT}
+      port: ${{APP_PORT}}
       protocol: TCP
-      targetPort: ${APP_PORT}
+      targetPort: ${{APP_PORT}}
     selector:
       app: ${APP_NAME}
       deploymentconfig: ${APP_NAME}

@@ -7,14 +7,18 @@ spec:
     type: Git
     git:
       uri: https://github.com/platform-guild/openshift-workshop.git
+    contextDir:
+      openshift/services-sti
   strategy:
     type: Docker
     dockerStrategy:
-      dockerfilePath: openshift/services-sti/Dockerfile
+      dockerfilePath: Dockerfile
   output:
     to:
       kind: ImageStreamTag
       name: service-sti-builder:latest
+  triggers:
+  - type: ConfigChange
 
 ---
 
