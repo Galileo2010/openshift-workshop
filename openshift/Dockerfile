@@ -2,8 +2,11 @@ FROM openjdk:8-jdk-alpine
 
 VOLUME /tmp
 
-EXPOSE 8080
+ENV APP_PORT 8080
+ENV APP_ENV dev
+
+EXPOSE $APP_PORT
 
 COPY app.jar /
 
-CMD ["java", "-jar", "/app.jar", "--server.port=8080"]
+CMD ["java", "-jar", "/app.jar", "--server.port=$APP_PORT", "--spring.profiles.active=$APP_ENV"]
