@@ -9,4 +9,4 @@ EXPOSE $APP_PORT
 
 COPY app.jar /
 
-CMD ["java", "-jar", "/app.jar", "--server.port=$APP_PORT", "--spring.profiles.active=$APP_ENV"]
+CMD ["sh", "-c", "java -jar /app.jar --server.port=$APP_PORT --spring.profiles.active=$APP_ENV"]
