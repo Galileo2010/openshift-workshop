@@ -1,0 +1,26 @@
+kind: BuildConfig
+apiVersion: v1
+metadata:
+  name: service-sti-builder
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/platform-guild/openshift-workshop.git
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: openshift/services-sti/Dockerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: service-sti-builder:latest
+
+---
+
+apiVersion: v1
+kind: ImageStream
+metadata:
+  labels:
+    app: service-sti-builder
+  name: service-sti-builder

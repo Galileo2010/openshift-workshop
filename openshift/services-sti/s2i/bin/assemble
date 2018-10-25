@@ -1,0 +1,61 @@
+#!/bin/bash -e
+#
+# S2I assemble script for the 'springboot-gradle-centos7' image.
+# The 'assemble' script builds your application source so that it is ready to run.
+#
+# For more information refer to the documentation:
+#	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
+#
+
+# If the 'springboot-gradle-centos7' assemble script is executed with the '-h' flag, print the usage.
+if [[ "$1" == "-h" ]]; then
+	exec /usr/libexec/s2i/usage
+fi
+
+HOME=/opt/app-root/src
+LOCAL_SOURCE_DIR=${HOME}/source
+DEPLOY_DIR=/opt/openshift
+
+mkdir -p $LOCAL_SOURCE_DIR $DEPLOY_DIR
+
+
+# Restore artifacts from the previous build (if they exist).
+#
+if [ "$(ls /tmp/artifacts/ 2>/dev/null)" ]; then
+  echo "---> Restoring build artifacts..."
+  mv /tmp/artifacts/. ./
+fi
+
+echo "---> Installing application source..."
+cp -Rf /tmp/src/* $LOCAL_SOURCE_DIR
+
+echo "---> Building application from source..."
+# TODO: Add build steps for your application, eg npm install, bundle install, pip install, etc.
+
+pushd $LOCAL_SOURCE_DIR &> /dev/null
+
+if [ -z "$APP_NAME" ]; then
+    echo "APP_NAME must not be empty"
+    exit 1
+fi
+
+# Execute the actual build
+gradle -s :$APP_NAME:build
+ERR=$?
+if [ $ERR -ne 0 ]; then
+  echo "Aborting due to error code $ERR from Gradle build"
+  exit $ERR
+fi
+
+echo "Copying all JAR artifacts"
+cp -v $LOCAL_SOURCE_DIR/$APP_NAME/build/libs/*.jar $DEPLOY_DIR
+
+popd &> /dev/null
+
+if [ $(ls /opt/openshift/*.jar | wc -l) -eq 1 ]; then
+  mv /opt/openshift/*.jar /opt/openshift/app.jar
+  [ ! -f /opt/openshift/app.jar ] && echo "Application could not be properly built." && exit 1 
+  echo "Application jar file is located in /opt/openshift/app.jar"
+else
+  exit 1
+fi

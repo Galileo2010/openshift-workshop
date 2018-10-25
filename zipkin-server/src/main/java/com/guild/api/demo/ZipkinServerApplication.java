@@ -2,8 +2,10 @@ package com.guild.api.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import zipkin.server.EnableZipkinServer;
 
-// TODO: add @EnableZipkinServer here
+
+@EnableZipkinServer
 @SpringBootApplication
 public class ZipkinServerApplication {
     public static void main(String[] args) {

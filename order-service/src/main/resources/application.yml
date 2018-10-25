@@ -5,15 +5,11 @@ server:
 spring:
   application:
     name: order-service
-# TODO: enable the Zipkin and Sleuth Sampler
-#  zipkin:
-#    base-url: http://localhost:9411
-#  sleuth:
-#    sampler:
-#      percentage: 1.0
-# TODO: config logging path
-#logging:
-#  path: ./build/log
+  zipkin:
+    base-url: http://localhost:9000
+  sleuth:
+    sampler:
+      percentage: 1.0
 
 info:
   app:
@@ -57,3 +53,20 @@ product:
     poolSize: 20
     timeout: 5000
 
+---
+
+server:
+  port: 8080
+spring:
+  profiles: dev
+  zipkin:
+    base-url: http://zipkin-server:9000
+user:
+  service:
+    baseUrl: http://user-service:8080/user-service
+logistics:
+  service:
+    baseUrl: http://logistics-service:8080/logistics-service
+product:
+  service:
+    baseUrl: http://product-service:8080/product-service

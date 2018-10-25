@@ -1,0 +1,22 @@
+#!/bin/bash -e
+#
+# S2I run script for the 'springboot-gradle-centos7' image.
+# The run script executes the server that runs your application.
+#
+# For more information see the documentation:
+#	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
+#
+
+if [ -z "$APP_OPTIONS" ]; then
+    APP_OPTIONS=""
+fi
+
+if [ ! -z "$APP_ENV" ]; then
+    APP_OPTIONS="$APP_OPTIONS --spring.profiles.active=$APP_ENV"
+fi
+
+if [ ! -z "$APP_PORT" ]; then
+    APP_OPTIONS="$APP_OPTIONS --server.port=$APP_PORT"
+fi
+
+exec java -Djava.security.egd=file:/dev/./urandom -jar /opt/openshift/app.jar $APP_OPTIONS
