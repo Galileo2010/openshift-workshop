@@ -33,6 +33,14 @@ oc project openshift-workshop
 ```console
 oc status
 ```
+#### BuildConfig
+
+#### Source to Image
+##### [How to create S2I builder image](https://blog.openshift.com/create-s2i-builder-image/)
+```console
+oc 
+```
+
 ## Workshop -- part 2
 
 ```console
