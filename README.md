@@ -25,26 +25,66 @@
 
 ## Workshop -- part 1
 
-
+### Basic check before we get started
 ```console
-oc project openshift-workshop
+oc login https://oc.tlk.im:443 --token=#TOKEN#
 ```
 
 ```console
 oc status
 ```
-#### BuildConfig
 
-#### Source to Image
-##### [How to create S2I builder image](https://blog.openshift.com/create-s2i-builder-image/)
 ```console
-oc 
+oc project workshop
+```
+
+### Deploy first application on OpenShift
+
+#### Create a S2I Builder
+###### [How to create S2I builder image](https://blog.openshift.com/create-s2i-builder-image/)
+1. Git clone *platform-s2i-springboot*
+    ```console
+    git clone https://github.com/platform-guild/platform-s2i-springboot.git
+    ```
+2. Build image
+    ```console
+    oc create -f openshift/springboot-s2i-buildconfig.yaml  
+    ```
+#### Build a Service with S2I builder
+Create Zipkin server from zipkin-server-template.yaml. 
+    
+There are two ways. One way is to create as below,   
+![Console way](images/console-template-to-create.png)
+    
+and the other way is to create via Command Line.
+```console
+oc create -f openshift/zipkin-server-template.yaml \
+    -p PROJECT_NAME=workshop \ 
+    -p APP_NAME=zipkin-server \
+    -p GIT_SOURCE_URL=https://github.com/platform-guild/openshift-workshop.git \
+    -p GIT_SOURCE_REF=master \
+    -p APP_PORT=9000 \
+    -p APP_ENV=dev
+```
+
+### Template on OpenShift
+```console
+oc create -f zipkin-server-template.yaml
+```
+```console
+oc process zipkin-server-template.yaml | oc create -f -
+```
+
+### Best practices
+#### Use of Labels
+```console
+oc delete -all --selector="app=zipkin-server"
 ```
 
 ## Workshop -- part 2
 
-```console
-oc 
-```
+
+
+### Logging & Monitoring
 
 Go to [HOWTO.md](HOWTO.md) for how to configure and build the projects.
