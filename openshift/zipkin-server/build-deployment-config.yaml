@@ -1,7 +1,7 @@
-kind: Template
 apiVersion: v1
+kind: Template
 metadata:
-  name: api-services-template
+  name: zipkin-server-build-deployment-config
 objects:
   - kind: ImageStream
     apiVersion: v1
@@ -13,37 +13,6 @@ objects:
   - kind: BuildConfig
     apiVersion: v1
     metadata:
-      annotations:
-        pipeline.alpha.openshift.io/uses: '[{"name": "${NAME}", "namespace": "workshop", "kind": "DeploymentConfig"}]'
-      labels:
-        name: ${APP_NAME}
-      name: ${APP_NAME}
-    spec:
-      triggers:
-        - type: "ConfigChange"
-      source:
-        type: "Git"
-        git:
-          uri: ${GIT_SOURCE_URL}
-          ref: ${GIT_SOURCE_REF}
-      strategy:
-        type: JenkinsPipeline
-        jenkinsPipelineStrategy:
-          jenkinsfilePath: openshift/Jenkinsfile
-          env:
-            - name: APP_NAME
-              value: ${APP_NAME}
-            - name: APP_PORT
-              value: ${APP_PORT}
-            - name: GIT_SOURCE_URL
-              value: ${GIT_SOURCE_URL}
-            - name: GIT_SOURCE_REF
-              value: ${GIT_SOURCE_REF}
-            - name: PROJECT_NAME
-              value: ${PROJECT_NAME}
-  - kind: BuildConfig
-    apiVersion: v1
-    metadata:
       labels:
         app: ${APP_NAME}
       name: ${APP_NAME}
@@ -52,17 +21,24 @@ objects:
         to:
           kind: ImageStreamTag
           name: ${APP_NAME}:latest
-      postCommit: {}
-      resources: {}
       runPolicy: Serial
-      source:
-        binary:
-          asDir: .
-        type: Docker
       strategy:
-        dockerStrategy:
-          dockerfilePath: Dockerfile
-      triggers: []
+        type: Source
+        sourceStrategy:
+          forcePull: true
+          from:
+            kind: ImageStreamTag
+            name: service-sti-builder:latest
+          env:
+            - name: APP_NAME
+              value: ${APP_NAME}
+      source:
+        type: Git
+        git:
+          uri: ${GIT_SOURCE_URL}
+          ref: ${GIT_SOURCE_REF}
+      triggers:
+        - type: ImageChange
   - kind: DeploymentConfig
     apiVersion: v1
     metadata:
@@ -92,20 +68,20 @@ objects:
             - image: ${PROJECT_NAME}/${APP_NAME}
               imagePullPolicy: Always
               name: ${APP_NAME}
-              ports:
-                - containerPort: ${{APP_PORT}}
-                  protocol: TCP
               env:
                 - name: APP_NAME
                   value: ${APP_NAME}
-                - name: APP_PORT
-                  value: ${APP_PORT}
                 - name: APP_ENV
                   value: ${APP_ENV}
+                - name: APP_PORT
+                  value: ${APP_PORT}
+              ports:
+                - containerPort: ${{APP_PORT}}
+                  protocol: TCP
               resources: {}
               livenessProbe:
                 httpGet:
-                  path: /${APP_NAME}/health
+                  path: /health
                   port: ${{APP_PORT}}
                   scheme: HTTP
                 initialDelaySeconds: 10
@@ -115,7 +91,7 @@ objects:
                 failureThreshold: 3
               readinessProbe:
                 httpGet:
-                  path: /${APP_NAME}/health
+                  path: /health
                   port: ${{APP_PORT}}
                   scheme: HTTP
                 initialDelaySeconds: 30
@@ -129,17 +105,14 @@ objects:
       triggers:
         - type: ImageChange
           imageChangeParams:
-            automatic: false
+            automatic: true
             from:
               kind: ImageStreamTag
               name: ${APP_NAME}:latest
             containerNames:
-              - ${APP_NAME}
   - kind: Service
     apiVersion: v1
     metadata:
-      annotations:
-        openshift.io/generated-by: OpenShiftNewApp
       labels:
         app: ${APP_NAME}
       name: ${APP_NAME}
@@ -153,21 +126,7 @@ objects:
         app: ${APP_NAME}
         deploymentconfig: ${APP_NAME}
       type: ClusterIP
-  - kind: Route
-    apiVersion: v1
-    metadata:
-      name: ${APP_NAME}
-      labels:
-        app: ${APP_NAME}
-    spec:
-      host: workshop.apps.tlk.im
-      path: "/${APP_NAME}"
-      to:
-        kind: Service
-        name: ${APP_NAME}
-        weight: 100
-      port:
-        targetPort: ${APP_PORT}-tcp
+        - ${APP_NAME}
 parameters:
   - name: PROJECT_NAME
     description: Project Name
@@ -178,7 +137,7 @@ parameters:
     description: The name assigned to all of the application objects defined in this template.
     displayName: Application Name
     required: true
-    value: user-service
+    value: zipkin-server
   - name: GIT_SOURCE_URL
     description: The source URL for the application
     displayName: Source URL
@@ -193,7 +152,7 @@ parameters:
     description: Application server port
     displayName: Server Port
     required: true
-    value: "8080"
+    value: "9000"
   - name: APP_ENV
     description: Application running environment
     displayName: App Environment

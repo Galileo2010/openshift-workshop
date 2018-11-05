@@ -135,7 +135,7 @@ objects:
       name: ${APP_NAME}
     spec:
       host: workshop.apps.tlk.im
-      path: '/zipkin-server'
+      path: "/${APP_NAME}"
       port:
         targetPort: ${APP_PORT}-tcp
       to:

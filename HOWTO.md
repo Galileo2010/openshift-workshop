@@ -50,7 +50,7 @@ You can access the two endpoints once you start the services:
     
  2. add `@EnableZipkinServer` annotation for ZipkinServerApplication
  2. run `./gradlew :zipkin-server:bootRun`
- 3. check [zipkin dashboard](http://localhost:9411)
+ 3. check [zipkin dashboard](http://localhost:9000)
  
 ### Step 2: Configure trace client(for all order-service, user-service, product-service and logistics-service):
  1. add dependency for each service
@@ -61,9 +61,9 @@ You can access the two endpoints once you start the services:
  2. run command ./gradlew cI idea, then start all services using ./gradlew :xxx-service:bootRun
  3. add log for http request(slf4j)
  4. start application check log
- 5. check [zipkin dashboard](http://localhost:9411)
+ 5. check [zipkin dashboard](http://localhost:9000)
  6. add sampler properties sleuth.sampler.percentage=0.2
- 7. check [zipkin dashboard](http://localhost:9411)
+ 7. check [zipkin dashboard](http://localhost:9000)
  
 ### Step 3: persistent the trace information (Optional)
  1. add dependency: compile('io.zipkin.java:zipkin-autoconfigure-storage-mysql:2.2.1')
