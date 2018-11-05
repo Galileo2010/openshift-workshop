@@ -60,27 +60,23 @@ oc create -f openshift/zipkin-server/template.yaml \
 or to create via the web console as below,   
 ![Console way](images/console-template-to-create.png)
 
-#### Build Pipeline
-
-```console
-oc create 
-```
-> this is
-
 #### Reach service out 
 ```console
 oc expose service
 ```
 
+### Deploy service with CI/CD pipeline
+#### Create service from template
 ```console
-
+oc create -f openshift/service/template.yaml
 ```
+
 #### Auto triggering
-- Define your ```Secret``` before actually doing it.
+* Define your ```Secret``` before actually doing it.
     ```console
     oc create -f openshift/github-webhook-secret.yaml
     ```
-- Update ```BuildConfig``` to allow auto build triggering when there is new change is checked in codebase,
+* Update ```BuildConfig``` to allow auto build triggering when there is new change is checked in codebase,
     ```yaml
     triggers: 
         - type: "GitHub"
@@ -89,7 +85,12 @@ oc expose service
     ```
 
 
-### Template on OpenShift
+### Best practices
+#### Use of Labels
+```console
+oc delete all --selector="app=zipkin-server"
+```
+#### Template on OpenShift
 ```console
 oc create -f zipkin-server-template.yaml
 ```
@@ -97,17 +98,13 @@ oc create -f zipkin-server-template.yaml
 oc process zipkin-server-template.yaml | oc create -f -
 ```
 
-### Best practices
-#### Use of Labels
-```console
-oc delete -all --selector="app=zipkin-server"
-```
-
 ## Workshop -- part 2
 
 ### Scale up & down
 
 ### Rollback
+
+### Service registration & discovery
 
 ### Logging & Monitoring
 
