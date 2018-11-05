@@ -3,197 +3,197 @@ apiVersion: v1
 metadata:
   name: api-services-template
 objects:
-  - kind: ImageStream
-    apiVersion: v1
-    metadata:
-      labels:
-        app: ${APP_NAME}
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    labels:
+      app: ${APP_NAME}
+    name: ${APP_NAME}
+  spec: {}
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    annotations:
+      pipeline.alpha.openshift.io/uses: '[{"name": "${NAME}", "namespace": "workshop", "kind": "DeploymentConfig"}]'
+    labels:
       name: ${APP_NAME}
-    spec: {}
-  - kind: BuildConfig
-    apiVersion: v1
-    metadata:
-      annotations:
-        pipeline.alpha.openshift.io/uses: '[{"name": "${NAME}", "namespace": "workshop", "kind": "DeploymentConfig"}]'
-      labels:
-        name: ${APP_NAME}
-      name: ${APP_NAME}
-    spec:
-      triggers:
-        - type: "ConfigChange"
-      source:
-        type: "Git"
-        git:
-          uri: ${GIT_SOURCE_URL}
-          ref: ${GIT_SOURCE_REF}
-      strategy:
-        type: JenkinsPipeline
-        jenkinsPipelineStrategy:
-          jenkinsfilePath: openshift/Jenkinsfile
+    name: ${APP_NAME}
+  spec:
+    triggers:
+    - type: "ConfigChange"
+    source:
+      type: "Git"
+      git:
+        uri: ${GIT_SOURCE_URL}
+        ref: ${GIT_SOURCE_REF}
+    strategy:
+      type: JenkinsPipeline
+      jenkinsPipelineStrategy:
+        jenkinsfilePath: openshift/Jenkinsfile
+        env:
+        - name: APP_NAME
+          value: ${APP_NAME}
+        - name: APP_PORT
+          value: ${APP_PORT}
+        - name: GIT_SOURCE_URL
+          value: ${GIT_SOURCE_URL}
+        - name: GIT_SOURCE_REF
+          value: ${GIT_SOURCE_REF}
+        - name: PROJECT_NAME
+          value: ${PROJECT_NAME}
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    labels:
+      app: ${APP_NAME}
+    name: ${APP_NAME}
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${APP_NAME}:latest
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      binary:
+        asDir: .
+      type: Docker
+    strategy:
+      dockerStrategy:
+        dockerfilePath: Dockerfile
+    triggers: []
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    labels:
+      app: ${APP_NAME}
+    name: ${APP_NAME}
+  spec:
+    replicas: 1
+    selector:
+      app: ${APP_NAME}
+      deploymentconfig: ${APP_NAME}
+    strategy:
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          app: ${APP_NAME}
+          deploymentconfig: ${APP_NAME}
+      spec:
+        containers:
+        - image: ${PROJECT_NAME}/${APP_NAME}
+          imagePullPolicy: Always
+          name: ${APP_NAME}
+          ports:
+          - containerPort: ${{APP_PORT}}
+            protocol: TCP
           env:
-            - name: APP_NAME
-              value: ${APP_NAME}
-            - name: APP_PORT
-              value: ${APP_PORT}
-            - name: GIT_SOURCE_URL
-              value: ${GIT_SOURCE_URL}
-            - name: GIT_SOURCE_REF
-              value: ${GIT_SOURCE_REF}
-            - name: PROJECT_NAME
-              value: ${PROJECT_NAME}
-  - kind: BuildConfig
-    apiVersion: v1
-    metadata:
-      labels:
-        app: ${APP_NAME}
-      name: ${APP_NAME}
-    spec:
-      output:
-        to:
+          - name: APP_NAME
+            value: ${APP_NAME}
+          - name: APP_PORT
+            value: ${APP_PORT}
+          - name: APP_ENV
+            value: ${APP_ENV}
+          resources: {}
+          livenessProbe:
+            httpGet:
+              path: /${APP_NAME}/health
+              port: ${{APP_PORT}}
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /${APP_NAME}/health
+              port: ${{APP_PORT}}
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+    triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: false
+        from:
           kind: ImageStreamTag
           name: ${APP_NAME}:latest
-      postCommit: {}
-      resources: {}
-      runPolicy: Serial
-      source:
-        binary:
-          asDir: .
-        type: Docker
-      strategy:
-        dockerStrategy:
-          dockerfilePath: Dockerfile
-      triggers: []
-  - kind: DeploymentConfig
-    apiVersion: v1
-    metadata:
-      labels:
-        app: ${APP_NAME}
+        containerNames:
+        - ${APP_NAME}
+- kind: Service
+  apiVersion: v1
+  metadata:
+    labels:
+      app: ${APP_NAME}
+    name: ${APP_NAME}
+  spec:
+    ports:
+    - name: ${APP_PORT}-tcp
+      port: ${{APP_PORT}}
+      protocol: TCP
+      targetPort: ${{APP_PORT}}
+    selector:
+      app: ${APP_NAME}
+      deploymentconfig: ${APP_NAME}
+    type: ClusterIP
+- kind: Route
+  apiVersion: v1
+  metadata:
+    name: ${APP_NAME}
+    labels:
+      app: ${APP_NAME}
+  spec:
+    host: workshop.apps.tlk.im
+    path: "/${APP_NAME}"
+    to:
+      kind: Service
       name: ${APP_NAME}
-    spec:
-      replicas: 1
-      selector:
-        app: ${APP_NAME}
-        deploymentconfig: ${APP_NAME}
-      strategy:
-        rollingParams:
-          intervalSeconds: 1
-          maxSurge: 25%
-          maxUnavailable: 25%
-          timeoutSeconds: 600
-          updatePeriodSeconds: 1
-        type: Rolling
-      template:
-        metadata:
-          labels:
-            app: ${APP_NAME}
-            deploymentconfig: ${APP_NAME}
-        spec:
-          containers:
-            - image: ${PROJECT_NAME}/${APP_NAME}
-              imagePullPolicy: Always
-              name: ${APP_NAME}
-              ports:
-                - containerPort: ${{APP_PORT}}
-                  protocol: TCP
-              env:
-                - name: APP_NAME
-                  value: ${APP_NAME}
-                - name: APP_PORT
-                  value: ${APP_PORT}
-                - name: APP_ENV
-                  value: ${APP_ENV}
-              resources: {}
-              livenessProbe:
-                httpGet:
-                  path: /${APP_NAME}/health
-                  port: ${{APP_PORT}}
-                  scheme: HTTP
-                initialDelaySeconds: 10
-                timeoutSeconds: 2
-                periodSeconds: 10
-                successThreshold: 1
-                failureThreshold: 3
-              readinessProbe:
-                httpGet:
-                  path: /${APP_NAME}/health
-                  port: ${{APP_PORT}}
-                  scheme: HTTP
-                initialDelaySeconds: 30
-                timeoutSeconds: 2
-                periodSeconds: 10
-                successThreshold: 1
-                failureThreshold: 3
-          dnsPolicy: ClusterFirst
-          restartPolicy: Always
-          securityContext: {}
-      triggers:
-        - type: ImageChange
-          imageChangeParams:
-            automatic: false
-            from:
-              kind: ImageStreamTag
-              name: ${APP_NAME}:latest
-            containerNames:
-              - ${APP_NAME}
-  - kind: Service
-    apiVersion: v1
-    metadata:
-      labels:
-        app: ${APP_NAME}
-      name: ${APP_NAME}
-    spec:
-      ports:
-        - name: ${APP_PORT}-tcp
-          port: ${{APP_PORT}}
-          protocol: TCP
-          targetPort: ${{APP_PORT}}
-      selector:
-        app: ${APP_NAME}
-        deploymentconfig: ${APP_NAME}
-      type: ClusterIP
-  - kind: Route
-    apiVersion: v1
-    metadata:
-      name: ${APP_NAME}
-      labels:
-        app: ${APP_NAME}
-    spec:
-      host: workshop.apps.tlk.im
-      path: "/${APP_NAME}"
-      to:
-        kind: Service
-        name: ${APP_NAME}
-        weight: 100
-      port:
-        targetPort: ${APP_PORT}-tcp
+      weight: 100
+    port:
+      targetPort: ${APP_PORT}-tcp
 parameters:
-  - name: PROJECT_NAME
-    description: Project Name
-    displayname: Project Name
-    required: true
-    value: workshop
-  - name: APP_NAME
-    description: The name assigned to all of the application objects defined in this template.
-    displayName: Application Name
-    required: true
-    value: user-service
-  - name: GIT_SOURCE_URL
-    description: The source URL for the application
-    displayName: Source URL
-    required: true
-    value: https://github.com/platform-guild/openshift-workshop.git
-  - name: GIT_SOURCE_REF
-    description: The source Ref for the application
-    displayName: Source Ref
-    required: true
-    value: master
-  - name: APP_PORT
-    description: Application server port
-    displayName: Server Port
-    required: true
-    value: "8080"
-  - name: APP_ENV
-    description: Application running environment
-    displayName: App Environment
-    required: true
-    value: dev
+- name: PROJECT_NAME
+  description: Project Name
+  displayname: Project Name
+  required: true
+  value: workshop
+- name: APP_NAME
+  description: The name assigned to all of the application objects defined in this template.
+  displayName: Application Name
+  required: true
+  value: user-service
+- name: GIT_SOURCE_URL
+  description: The source URL for the application
+  displayName: Source URL
+  required: true
+  value: https://github.com/platform-guild/openshift-workshop.git
+- name: GIT_SOURCE_REF
+  description: The source Ref for the application
+  displayName: Source Ref
+  required: true
+  value: master
+- name: APP_PORT
+  description: Application server port
+  displayName: Server Port
+  required: true
+  value: "8080"
+- name: APP_ENV
+  description: Application running environment
+  displayName: App Environment
+  required: true
+  value: dev

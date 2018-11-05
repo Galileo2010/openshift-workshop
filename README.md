@@ -42,14 +42,16 @@ oc project workshop
 
 #### S2I builder image
 
-Follow [README.md](https://github.com/platform-guild/platform-s2i-springboot) to import S2I builder image into the online catalog.   
+Follow [README.md](https://github.com/platform-guild/platform-s2i-springboot) to import S2I builder image into the online catalog.
+
+Continue next step only when builder image is created successfully. You can check from web console.   
 
 #### Build service with S2I builder image
-Create Zipkin server from zipkin-server/template.yaml. 
+Create Zipkin server from zipkin-server/build-deployment-config.yaml. 
     
 There are two ways. Either to create via ```oc```,
 ```console
-oc create -f openshift/zipkin-server/template.yaml \
+oc create -f openshift/zipkin-server/build-deployment-config.yaml \
     -p PROJECT_NAME=workshop \ 
     -p APP_NAME=zipkin-server \
     -p GIT_SOURCE_URL=https://github.com/platform-guild/openshift-workshop.git \
@@ -60,7 +62,7 @@ oc create -f openshift/zipkin-server/template.yaml \
 or to create via the web console as below,   
 ![Console way](images/console-template-to-create.png)
 
-#### Reach service out 
+#### Access service
 ```console
 oc expose service
 ```
