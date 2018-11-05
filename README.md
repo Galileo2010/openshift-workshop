@@ -66,6 +66,19 @@ oc create -f openshift/zipkin-server-template.yaml \
     -p APP_PORT=9000 \
     -p APP_ENV=dev
 ```
+#### Auto triggering
+- Define your ```Secret``` before actually doing it.
+    ```console
+    oc create -f openshift/github-webhook-secret.yaml
+    ```
+- Update ```BuildConfig``` to allow auto build triggering when there is new change is checked in codebase,
+    ```yaml
+    triggers: 
+        - type: "GitHub"
+          github:
+            secret: "sti-builder-secret"
+    ```
+
 
 ### Template on OpenShift
 ```console
