@@ -110,6 +110,7 @@ objects:
           kind: ImageStreamTag
           name: ${APP_NAME}:latest
         containerNames:
+        - ${APP_NAME}
 - kind: Service
   apiVersion: v1
   metadata:
