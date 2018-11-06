@@ -126,7 +126,6 @@ objects:
       app: ${APP_NAME}
       deploymentconfig: ${APP_NAME}
     type: ClusterIP
-    - ${APP_NAME}
 parameters:
 - name: PROJECT_NAME
   description: Project Name
