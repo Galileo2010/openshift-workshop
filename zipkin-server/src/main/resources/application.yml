@@ -1,5 +1,6 @@
 server:
   port: 9000
+  context-path: /zipkin
 spring:
   application:
     name: zipkin-server
