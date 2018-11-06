@@ -58,10 +58,15 @@ oc new-app -f openshift/zipkin-server/build-deployment-config.yaml \
 
 or to create via the web console as below,   
 ![Console way](images/console-template-to-create.png)
+#### 
+```console
+oc get buildconfig
 
+oc start-build zipkin-server
+```
 #### Access service
 ```console
-oc expose service
+oc expose service zipkin-server --hostname=workshop.apps.tlk.im --port=9000 -l app=zipkin-server
 ```
 
 ### Deploy service with CI/CD pipeline
