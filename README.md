@@ -16,11 +16,6 @@
   ```console
   export PATH=#USER_HOME#/openshift-cli:$PATH
   ``` 
-  , or (only when permission is sufficient)
-  ```console
-  cp ~/openshift-cli/oc /usr/bin  
-  cp ~/openshift-cli/kubectl /usr/bin
-  ```
 
 
 ## Workshop -- part 1
@@ -51,7 +46,7 @@ Create Zipkin server from zipkin-server/build-deployment-config.yaml.
     
 There are two ways. Either to create via ```oc```,
 ```console
-oc create -f openshift/zipkin-server/build-deployment-config.yaml \
+oc new-app -f openshift/zipkin-server/build-deployment-config.yaml \
     -p PROJECT_NAME=workshop \ 
     -p APP_NAME=zipkin-server \
     -p GIT_SOURCE_URL=https://github.com/platform-guild/openshift-workshop.git \
@@ -59,6 +54,8 @@ oc create -f openshift/zipkin-server/build-deployment-config.yaml \
     -p APP_PORT=9000 \
     -p APP_ENV=dev
 ```
+> ```new-app``` usually 
+
 or to create via the web console as below,   
 ![Console way](images/console-template-to-create.png)
 
@@ -94,11 +91,24 @@ oc delete all --selector="app=zipkin-server"
 ```
 #### Template on OpenShift
 ```console
-oc create -f zipkin-server-template.yaml
+oc process -f openshift/service/template.yaml
 ```
+> This is to
+
 ```console
-oc process zipkin-server-template.yaml | oc create -f -
+oc process --parameters -f openshift/service/template.yaml
 ```
+> This is to 
+
+```console
+oc process -f zipkin-server-template.yaml | oc create -f -
+```
+> To create objects by giving pre-defined template
+
+```console
+oc create -f openshift/service/template.yaml
+```
+> To upload template 
 
 ## Workshop -- part 2
 
