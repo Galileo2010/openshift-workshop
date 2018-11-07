@@ -46,7 +46,7 @@ objects:
   metadata:
     labels:
       app: ${APP_NAME}
-    name: ${APP_NAME}
+    name: ${APP_NAME}-docker
   spec:
     output:
       to:
