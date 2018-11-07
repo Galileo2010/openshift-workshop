@@ -41,6 +41,28 @@ objects:
           value: ${GIT_SOURCE_REF}
         - name: PROJECT_NAME
           value: ${PROJECT_NAME}
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    labels:
+      app: ${APP_NAME}
+    name: ${APP_NAME}
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${APP_NAME}:latest
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      binary:
+        asDir: .
+      type: Docker
+    strategy:
+      dockerStrategy:
+        dockerfilePath: Dockerfile
+    triggers: []
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
