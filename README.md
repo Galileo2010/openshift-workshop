@@ -130,7 +130,7 @@ oc start-build product-service
 #### Auto triggering
 * Define your `Secret` before actually doing it.
     ```console
-    oc create -f openshift/github-webhook-secret.yaml
+    oc create -f openshift/service/github-webhook-secret.yaml
     ```
 * Update `BuildConfig` to allow auto build triggering when there is new change is checked in codebase.
 
@@ -143,7 +143,7 @@ oc start-build product-service
     triggers: 
         - type: "GitHub"
           github:
-            secret: "sti-builder-secret"
+            secret: "service-webhook-secret"
     ```
 To verify the auto triggering, make another change to `ProductController` then commit and push the change to check.    
 
