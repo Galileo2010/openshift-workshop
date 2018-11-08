@@ -51,7 +51,7 @@ Create Zipkin server from zipkin-server/build-deployment-config.yaml.
 There are two ways. Either to create via `oc`,
 ```console
 oc new-app -f openshift/zipkin-server/build-deployment-config.yaml \
-    -p PROJECT_NAME=workshop \ 
+    -p PROJECT_NAME=#PROJECT_NAME# \ 
     -p APP_NAME=zipkin-server \
     -p GIT_SOURCE_URL=https://github.com/platform-guild/openshift-workshop.git \
     -p GIT_SOURCE_REF=master \
@@ -72,11 +72,11 @@ oc start-build zipkin-server
 
 #### Access service
 ```console
-oc expose service zipkin-server --hostname=workshop.apps.tlk.im --port=9000 -l app=zipkin-server
+oc expose service zipkin-server --hostname=#PROJECT_NAME#.apps.tlk.im --port=9000 -l app=zipkin-server
 ```
 > It will expose zipkin-server service to hostname you specify.
 
-Now you are able to access zipkin server via URL [http://workshop.apps.tlk.im](http://workshop.apps.tlk.im/).
+Now you are able to access zipkin server via URL [http://#PROJECT_NAME#.apps.tlk.im](http://#PROJECT_NAME#.apps.tlk.im/).
 
 ### Deploy service with CI/CD pipeline
 #### Create service from template
@@ -88,7 +88,7 @@ oc create -f openshift/service/template.yaml
 Once template gets uploaded, you can deploy service by the OpenShift stored template,
 ```console
 oc process api-services-template \
-    -p PROJECT_NAME=workshop \ 
+    -p PROJECT_NAME=#PROJECT_NAME# \ 
         -p APP_NAME=zipkin-server \
         -p GIT_SOURCE_URL=https://github.com/platform-guild/openshift-workshop.git \
         -p GIT_SOURCE_REF=master \
@@ -105,7 +105,7 @@ oc start-build jenkins-slave-gradle-centos7
 ``` 
 
 #### Access the service
-Go to [http://workshop.apps.tlk.im/product-service/products/123](http://workshop.apps.tlk.im/product-service/products/123)
+Go to [http://#PROJECT_NAME#.apps.tlk.im/product-service/products/123](http://#PROJECT_NAME#.apps.tlk.im/product-service/products/123)
 
 #### Make some change to application
 
