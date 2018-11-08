@@ -128,24 +128,43 @@ oc start-build product-service
 ```
 
 #### Auto triggering
-* Define your `Secret` before actually doing it.
+* Define your **Secret** before actually doing it.
     ```console
     oc create -f openshift/service/github-webhook-secret.yaml
     ```
-* Update `BuildConfig` to allow auto build triggering when there is new change is checked in codebase.
+* Update **BuildConfig** to allow auto build triggering when there is new change is checked in codebase.
 
-    Edit the template by,
+    Edit the **BuildConfig** for _product-service_ by,
     ```console
     oc edit template api-services-template
     ```
-    Update `BuildConfig` by adding another trigger. 
+    Update **BuildConfig** by adding another trigger. 
     ```yaml
     triggers: 
-        - type: "GitHub"
-          github:
-            secret: "service-webhook-secret"
+      - type: "GitHub"
+        github:
+          secretReference: 
+            name: "service-webhook-secret"
     ```
-To verify the auto triggering, make another change to `ProductController` then commit and push the change to check.    
+* Copy Webhook url from OpenShift console
+
+    ```console
+    oc describe bc/product-service
+    ``` 
+    
+* Config Webhook in github
+    
+    * Go to Settings of repo https://github.com/#YOUR_ACCOUNT#/openshift-workshop.git
+
+    * Click Webhooks item to add Webhook
+
+    * Paste the webhook URL in field Payload URL, select application/json in Content type field, click disable ssl verification
+
+    * Github will test the webhook automatically, if succeed, it will place a green mark before the url.
+
+To verify the auto triggering, make another change to `ProductController` then commit and push the change to check.
+
+> Unfortunately you can not verify when the OpenShift access has networking limit.      
 
 #### CI/CD Model
 ![CI/CD Model](images/ci-cd-model.png)
