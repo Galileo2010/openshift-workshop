@@ -12,7 +12,7 @@
   mkdir ~/openshift-cli
   cd ~/downloads && tar xvf openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz -C ~/openshift-cli --strip-components 1
   ``` 
-  * Add ```oc``` in PATH. You can either
+  * Add `oc` in PATH. You can either
   ```console
   export PATH=#USER_HOME#/openshift-cli:$PATH
   ``` 
@@ -30,7 +30,11 @@ oc status
 ```
 
 ```console
-oc project workshop
+oc new-project #PROJECT_NAME#
+```
+
+```console
+oc project #PROJECT_NAME#
 ```
 
 ### Deploy first application on OpenShift
@@ -39,12 +43,12 @@ oc project workshop
 
 Follow [README.md](https://github.com/platform-guild/platform-s2i-springboot) to import S2I builder image into the online catalog.
 
-Continue next step only when builder image is created successfully. You can check from web console.   
+> _Note: only continue next step only when builder image is created successfully. You can check from web console._   
 
 #### Build service with S2I builder image
 Create Zipkin server from zipkin-server/build-deployment-config.yaml. 
     
-There are two ways. Either to create via ```oc```,
+There are two ways. Either to create via `oc`,
 ```console
 oc new-app -f openshift/zipkin-server/build-deployment-config.yaml \
     -p PROJECT_NAME=workshop \ 
@@ -54,21 +58,23 @@ oc new-app -f openshift/zipkin-server/build-deployment-config.yaml \
     -p APP_PORT=9000 \
     -p APP_ENV=dev
 ```
-> ```new-app``` usually 
+> `new-app` command creates a **build configuration**, which itself creates a new application **image** from source code. It typically also creates **deployment configuration** to deploy the new image, and a **service** to provide load-balanced access to the deployment running your image. 
 
 or to create via the web console as below,   
 ![Console way](images/console-template-to-create.png)
-#### 
+
+#### Start the build to get service running 
 ```console
 oc get buildconfig
 
 oc start-build zipkin-server
 ```
+
 #### Access service
 ```console
 oc expose service zipkin-server --hostname=workshop.apps.tlk.im --port=9000 -l app=zipkin-server
 ```
-> This will expose zipkin-server service to hostname you specify.
+> It will expose zipkin-server service to hostname you specify.
 
 Now you are able to access zipkin server via URL [http://workshop.apps.tlk.im](http://workshop.apps.tlk.im/).
 
@@ -79,7 +85,7 @@ oc create -f openshift/service/template.yaml
 ```
 > Upload template to projects.
 
-Now you can deploy service from the OpenShift stored template,
+Once template gets uploaded, you can deploy service by the OpenShift stored template,
 ```console
 oc process api-services-template \
     -p PROJECT_NAME=workshop \ 
@@ -89,6 +95,7 @@ oc process api-services-template \
         -p APP_PORT=9000 \
         -p APP_ENV=dev | oc create -f -
 ```
+
 #### Jenkins slave
 ```console
 oc create -f openshift/jenkins/buildconfig/gradle-centos7.yaml
@@ -100,19 +107,23 @@ oc start-build jenkins-slave-gradle-centos7
 #### Access the service
 Go to [http://workshop.apps.tlk.im/product-service/products/123](http://workshop.apps.tlk.im/product-service/products/123)
 
+#### Make some change to application
+
+
 #### Auto triggering
-* Define your ```Secret``` before actually doing it.
+* Define your `Secret` before actually doing it.
     ```console
     oc create -f openshift/github-webhook-secret.yaml
     ```
-* Update ```BuildConfig``` to allow auto build triggering when there is new change is checked in codebase,
+* Update `BuildConfig` to allow auto build triggering when there is new change is checked in codebase,
     ```yaml
     triggers: 
         - type: "GitHub"
           github:
             secret: "sti-builder-secret"
     ```
-
+#### CI/CD Model
+![CI/CD Model](images/ci-cd-model.png)
 
 ### Best practices
 #### Use of Labels
