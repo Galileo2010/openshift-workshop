@@ -17,4 +17,4 @@ server:
 spring:
   profiles: dev
   zipkin:
-    base-url: http://zepkin-server:9000
+    base-url: http://workshop.apps.tlk.im
