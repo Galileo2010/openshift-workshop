@@ -26,7 +26,7 @@ oc login https://oc.tlk.im:443 --token=#TOKEN#
 ```
 
 ```console
-oc status
+oc projects
 ```
 
 ```console
@@ -34,12 +34,24 @@ oc new-project #PROJECT_NAME#
 ```
 
 ```console
-oc project #PROJECT_NAME#
+oc status
 ```
 
 ### Deploy first application on OpenShift
 
 #### S2I builder image
+What this repo is created for? By comparing to traditional pipeline way of build.
+1. Build docker image
+2. Build application
+3. Run application
+
+#### How Source-to-Image works
+For example, to create a reproducible build pipeline for Tomcat (the popular Java webserver) and Maven:
+
+1. Create a builder image containing OpenJDK and Tomcat that expects to have a WAR file injected
+2. Create a second image that layers on top of the first image Maven and any other standard dependencies, and expects to have a Maven project injected
+3. Invoke source-to-image using the Java application source and the Maven image to create the desired application WAR
+4. Invoke source-to-image a second time using the WAR file from the previous step and the initial Tomcat image to create the runtime image
 
 Follow [Springboot S2I README.md](https://github.com/platform-guild/platform-s2i-springboot) to import S2I builder image into the online catalog.
 
@@ -80,14 +92,6 @@ oc expose service zipkin-server --hostname=#PROJECT_NAME#.apps.tlk.im --port=900
 > It will expose zipkin-server service to hostname you specify.
 
 Now you are able to access zipkin server via URL [http://#PROJECT_NAME#.apps.tlk.im](http://#PROJECT_NAME#.apps.tlk.im/).
-
-#### How Source-to-Image works
-For example, to create a reproducible build pipeline for Tomcat (the popular Java webserver) and Maven:
-
-1. Create a builder image containing OpenJDK and Tomcat that expects to have a WAR file injected
-2. Create a second image that layers on top of the first image Maven and any other standard dependencies, and expects to have a Maven project injected
-3. Invoke source-to-image using the Java application source and the Maven image to create the desired application WAR
-4. Invoke source-to-image a second time using the WAR file from the previous step and the initial Tomcat image to create the runtime image
 
 ### Deploy service with CI/CD pipeline
 #### Create service from template
@@ -184,6 +188,16 @@ oc process -f zipkin-server-template.yaml | oc create -f -
 oc create -f openshift/service/template.yaml
 ```
 > To upload template to projects. 
+
+```console
+oc process api-services-template \
+    -p PROJECT_NAME=#PROJECT_NAME# \ 
+        -p APP_NAME=zipkin-server \
+        -p GIT_SOURCE_URL=https://github.com/#YOUR_ACCOUNT#/openshift-workshop.git \
+        -p GIT_SOURCE_REF=master \
+        -p APP_PORT=9000 \
+        -p APP_ENV=dev | oc delete -f - 
+```
 
 ## Workshop -- part 2
 
