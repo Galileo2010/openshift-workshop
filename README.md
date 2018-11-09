@@ -187,9 +187,46 @@ oc create -f openshift/service/template.yaml
 
 ## Workshop -- part 2
 
-### Scale up & down
-
 ### Rollback
+```console
+oc rollback dc/product-service 
+```
+, or
+```console
+oc rollout undo dc/product-service
+```
+### Scale up & down
+Scale up and down via CLI like below,
+```console
+oc scale dc/product-service --replicas=2
+```
+> Verify either from Web console or from CLI by `oc describe service #SERIVCE_NAME#`
+
+```console
+oc scale dc/product-service --replicas=1
+```
+> Scale down to 1 to reset.
+
+#### Auto-Scaling
+
+By default, pods consume unbounded node resources. Therefore in terms of steps,
+
+1. Resource limits on pods
+    ```yaml
+    resources:
+      limits:
+        cpu: 100m
+      requests:
+        cpu: 100m
+    ```
+2. Configure _autoscaler_
+    ```console
+    oc autoscale dc/product-service --min 1 --max 10 --cpu-percent=10
+    ```
+3. To verify the change,
+    ```console
+    ab -n 1000 -c 100 http://##
+    ```
 
 ### Service registration & discovery
 
