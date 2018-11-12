@@ -40,7 +40,7 @@ oc status
 ### Deploy first application on OpenShift
 
 #### S2I builder image
-What this repo is created for? By comparing to traditional pipeline way of build.
+What this repo is created for? By comparing to traditional pipeline way of build,
 1. Build docker image
 2. Build application
 3. Run application
@@ -202,13 +202,29 @@ oc process api-services-template \
 ## Workshop -- part 2
 
 ### Rollback
+To get information about all available revisions of your application, 
 ```console
-oc rollback dc/product-service 
+oc rollout history dc/product-service
 ```
-, or
+
+You can view details specific to a revision by using the `--revision` flag,
 ```console
-oc rollout undo dc/product-service
+oc rollout history dc/product-service --revision=3
 ```
+Given you are very sure which revision you want to rollback, now you can, 
+
+1. rollback to the last successful deployed revision of your configuration,  
+    ```console
+    oc rollout undo dc/product-service
+    ```
+    > A new replication controller will be started. If no revision is specified with --to-revision, then the last successfully deployed revision will be used.
+
+2. Rollback to specific revision of _DeploymentConfiguration_,
+    ```console
+    oc rollout undo dc/product-service --to-revision=2
+    ```
+    > If revision is specified with --to-revision, the specific revision of deployment will be used.
+ 
 ### Scale up & down
 Scale up and down via CLI like below,
 ```console
