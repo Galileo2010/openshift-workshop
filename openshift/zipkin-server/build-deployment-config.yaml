@@ -111,22 +111,6 @@ objects:
           name: ${APP_NAME}:latest
         containerNames:
         - ${APP_NAME}
-- kind: Service
-  apiVersion: v1
-  metadata:
-    labels:
-      app: ${APP_NAME}
-    name: ${APP_NAME}
-  spec:
-    ports:
-    - name: ${APP_PORT}-tcp
-      port: ${{APP_PORT}}
-      protocol: TCP
-      targetPort: ${{APP_PORT}}
-    selector:
-      app: ${APP_NAME}
-      deploymentconfig: ${APP_NAME}
-    type: ClusterIP
 parameters:
 - name: PROJECT_NAME
   description: Project Name

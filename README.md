@@ -86,8 +86,14 @@ oc start-build zipkin-server
 ```
 
 #### Access service
+Creating a **Service** first,
 ```console
-oc expose service zipkin-server --hostname=#PROJECT_NAME#.apps.tlk.im --port=9000 -l app=zipkin-server
+oc expose dc/zipkin-server --name=zipkin-server -l app=zipkin-server
+```
+
+Then create a **Route**,
+```console
+oc expose svc/zipkin-server --name=zipkin-server --hostname=#PROJECT_NAME#.apps.tlk.im --port=9000 -l app=zipkin-server
 ```
 > It will expose zipkin-server service to hostname you specify.
 
@@ -258,8 +264,41 @@ By default, pods consume unbounded node resources. Therefore in terms of steps,
     ab -n 1000 -c 100 http://##
     ```
 
-### Service registration & discovery
+### Deployment strategies
+#### Rolling strategy
+Slowly replaces instances of previous version of application with the instances of new version of the application. All rolling deployments in OpenShift are _canary_ deployments.
+
+Use this strategy when,
+* no downtime during application update
+* application supports having old code and new code running at the same time
+ 
+#### Recreate strategy
+Lifecycle hooks are supported for injecting code into the deployment process.
+Use this strategy when,
+* must run migrations or date transformations before you new code starts
+* do not support having new and old version of applications running at the same time
+* want to use volume which is not supported being shared between multiple replicas 
+
+This way incurs downtime becuase for a brief period no instaces of application are running
+
+#### Custom strategy
+Apparently, this strategy allows you define your own process of deployment. 
+
+#### Blue-Green deployment
+Involves running two versions of application at the same time and moving traffic from the in-production version (green version) to the newer version (the blue version).
+You can implement it either by 
+* rolling strategy
+* switch services in a route  
+
+#### A/B deployment
+It lets you try new version of application in a limited way in the production environment.
+With full control of portion of requests to each version of application, as testing progresses you can increase the fraction of requests to the new version and ultimately stop using the old version.
+
+By configurating **Route** object, we can achieve that.
+![Route for A/B deployment](images/a-b-deployment-route.png)
 
 ### Logging & Monitoring
+
+A quick showcase.
 
 Go to [HOWTO.md](HOWTO.md) for how to configure and build the projects.
