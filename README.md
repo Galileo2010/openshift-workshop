@@ -66,7 +66,7 @@ Now let's create a _zipkin server_ application.
 There are two ways. Either to create via `oc`,
 ```console
 oc new-app -f openshift/zipkin-server/build-deployment-config.yaml \
-    -p PROJECT_NAME=#PROJECT_NAME# \ 
+    -p PROJECT_NAME=#PROJECT_NAME# \
     -p APP_NAME=zipkin-server \
     -p GIT_SOURCE_URL=https://github.com/#YOUR_ACCOUNT#/openshift-workshop.git \
     -p GIT_SOURCE_REF=master \
