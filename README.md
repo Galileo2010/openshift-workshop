@@ -109,7 +109,7 @@ oc create -f openshift/service/template.yaml
 Once template gets uploaded, you can deploy service by the OpenShift stored template,
 ```console
 oc process api-services-template \
-    -p PROJECT_NAME=#PROJECT_NAME# \ 
+    -p PROJECT_NAME=#PROJECT_NAME# \
         -p APP_NAME=zipkin-server \
         -p GIT_SOURCE_URL=https://github.com/#YOUR_ACCOUNT#/openshift-workshop.git \
         -p GIT_SOURCE_REF=master \
