@@ -146,7 +146,7 @@ oc start-build product-service
 
     Edit the **BuildConfig** for _product-service_ by,
     ```console
-    oc edit template api-services-template
+    oc edit bc/product-service-docker
     ```
     Update **BuildConfig** by adding another trigger. 
     ```yaml
@@ -159,7 +159,7 @@ oc start-build product-service
 * Copy Webhook url from OpenShift console
 
     ```console
-    oc describe bc/product-service
+    oc describe bc/product-service-docker
     ``` 
     
 * Config Webhook in github
